@@ -1,0 +1,50 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+// ***** Verilog-AMS TestBench *****
+
+module top();
+    
+    initial begin
+    	$display("\nSTART OF SIMULATION\n");
+        #(1000000)
+        $display("\nEND OF SIMULATION\n");
+        $finish(0);
+    end
+    
+    
+    
+    //v_source #(.voltage_out(10)) volt1(v_out1, gnd_w);
+    //v_source #(.voltage_out(0.1)) volt2(v_out2, gnd_w);
+    //op_amp amp(.Vin_p(v_out2), .Vin_n(gnd_w), .S_p(v_out1), .S_n(gnd_w), .Vout(test));
+    
+    
+    //v_source #(.voltage_out(0.3)) volt3(v_out3, gnd_w);
+    //square_gen sq_gen (sw_out); 
+    //ideal_switch sw1(.p(test), .n(Vout_int), .in_p(sw_out), .in_n(gnd_w));
+    //res #(.r(1)) res_o(.p(Vout_int), .n(gnd_w));
+    
+    square_gen #( .P(100000), .V_P(1), .V_N(-1)) sq_gen (sq_out);      //100000
+    gen #(.D(1000)) sq_gen_sw (.out(sq_out_sw)); //1000
+    
+    ideal_switch #(.invert(0)) sw1(.p(sq_out), .n(c1_w), .s(sq_out_sw));
+    ideal_switch #(.invert(1)) sw2(.p(c1_w), .n(op_in), .s(sq_out_sw));
+
+    // Corrected
+    //ideal_switch #(.invert(0)) sw3(.p(op_in), .n(c3_w), .s(sq_out_sw));
+    //ideal_switch #(.invert(1)) sw4(.p(c3_w), .n(vout), .s(sq_out_sw));
+    //cap #(.c(0.5p)) c3(.p(c3_w), .n(gnd_w));
+    
+    
+    cap #(.c(2p)) c1(.p(c1_w), .n(gnd_w)); //2p - incorrect, 1p - corrected
+    
+    v_source #(.voltage_out(5)) volt_p(v_out_p, gnd_w);
+    v_source #(.voltage_out(-5)) volt_n(v_out_n, gnd_w);
+    //op_amp #(.Rin(1000000), .Ro(0.001), .Co(0), .G(10)) amp(.Vin_p(gnd_w), .Vin_n(op_in), .S_p(v_out_p), .S_n(v_out_n), .Vout(vout));
+    ideal_opamp amp(.pout(vout), .nout(gnd_w), .pin(gnd_w), .nin(op_in));
+    cap #(.c(25p)) c2(.p(vout), .n(op_in));
+    
+    gnd gnd_m(gnd_w);
+endmodule

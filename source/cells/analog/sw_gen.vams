@@ -1,0 +1,27 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module square_gen(out);
+    parameter P = 100;
+    parameter V_P = 1;
+    parameter V_N = 0;
+    inout out;
+    electrical out;
+    logic reset;
+    reg reset = 0;
+
+    always begin
+        #(P)
+        reset = ~reset;
+            
+    end
+    
+    analog begin
+        if (reset)
+            V(out) <+ V_P;
+        else 
+            V(out) <+ V_N;
+    end
+endmodule

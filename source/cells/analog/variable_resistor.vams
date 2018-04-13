@@ -1,0 +1,30 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+//Variable Resistor
+
+module var_res(p,n);
+    inout p,n;
+    electrical p,n;
+
+    parameter real R = 0 from [0:inf);
+    parameter integer TIME_DELAY = 1000;
+    parameter integer MULT_MAX = 100;
+
+    integer random_num = 0;
+    real r = R;
+    
+    always begin
+        #(TIME_DELAY)
+        //$get_random(`SIMULATION_SEED, random_num);
+        random_num = {$random} % MULT_MAX;
+        r = R * random_num + R;
+        //$display("\n\nRandom resistance: %f \n\n", r);
+    end
+    
+    analog begin
+        V(p,n) <+ r*I(p,n);
+    end
+
+
+endmodule

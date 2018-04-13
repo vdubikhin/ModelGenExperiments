@@ -1,0 +1,17 @@
+`include "disciplines.vams"
+
+// Ideal voltage source
+
+module v_source (v_out, g);
+    parameter real voltage_out = 5.0;         //output voltage
+
+    inout v_out;
+    electrical v_out;
+    inout g;
+    electrical g;
+
+    analog begin
+        V(v_out, g) <+ voltage_out;
+    end
+
+endmodule

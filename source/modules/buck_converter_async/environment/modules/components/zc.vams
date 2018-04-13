@@ -1,0 +1,33 @@
+/*
+Zero crossing module.
+
+Authors: Vladimir Dubikhin.
+*/
+
+`include "disciplines.vams"
+`include "constants.vams"
+`include "buck_converter_async_params.vh"
+
+/*
+Inputs:
+power_in - power input port.
+gn - N-type mosfet signal for digital simulation.
+Outputs:
+power_out - power output port.
+zc - zero crossing signal.
+*/
+module zc(power_in, power_out, zc, gn_ack);
+    parameter CMP_HYST   = `ZC_CMP_HYST;
+    parameter CMP_DELAY  = `ZC_CMP_DELAY;
+    parameter CMP_OFFSET = `ZC_CMP_OFFSET;
+
+    inout power_in, power_out;
+    input gn_ack;
+    output zc;
+    electrical power_in, power_out;
+    logic zc, gn_ack;
+    
+    current_sense #(.hyst(CMP_HYST), .D(CMP_DELAY), .offset(CMP_OFFSET)) zc_cmp(.out(zc_sample), .p(power_out), .n(power_in)); 
+    c_latch latch(.in_pos(1'b1), .in_neg(1'b0), .clk1(zc_sample & gn_ack), .clk2(gn_ack), .out(zc));
+
+endmodule

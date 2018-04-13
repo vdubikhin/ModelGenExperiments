@@ -1,0 +1,9 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+module gnd(in);
+    inout in;
+    electrical in;
+    ground in;
+    
+endmodule

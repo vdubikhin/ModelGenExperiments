@@ -1,0 +1,21 @@
+//Simple logic to analog converter
+
+`include "disciplines.vams"
+
+module d2a (out, in, gnd);
+    input in;
+    output out;
+    inout gnd;
+    logic in;
+    electrical out, gnd;
+
+    parameter real v_on = 5; //output voltage if 1
+    parameter real v_off = 0; //output voltage if 0 
+
+    analog begin
+        if (in == 1)
+            V(out, gnd) <+ v_on;
+        else
+            V(out, gnd) <+ v_off;
+    end
+endmodule

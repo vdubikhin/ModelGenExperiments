@@ -1,0 +1,58 @@
+// Comparator
+//
+// Version 1a, 1 June 04
+//
+// Olaf Zinke
+//
+// Downloaded from The Designer's Guide Community (www.designers-guide.org).
+// Post any questions on www.designers-guide.org/Forum.
+// Taken from "The Designer's Guide to Verilog-AMS" by Kundert & Zinke.
+// Chapter 4, Listing 14.
+
+`timescale 1ns / 1ps
+`include "disciplines.vams"
+
+module comparator_mux (out, p, n, nrst, s);
+    parameter D = 10;
+    parameter real offset1 = 0;			// Offset voltage (V)
+    parameter real hyst1 = 0.0 from [0:inf);	// Hysteresis (V)
+    parameter real offset2 = 0;			// Offset voltage (V)
+    parameter real hyst2 = 0.0 from [0:inf);	// Hysteresis (V)
+    inout p, n;
+    input nrst, s;
+    output out, s;
+    electrical p, n;
+    logic out, nrst, temp_out;
+    reg out, temp_out1, temp_out2;
+    
+    parameter real thrlo1 = offset1 - 0.5*hyst1;	// Lower threshold voltage (V)
+    parameter real thrhi1 = offset1 + 0.5*hyst1;	// Upper threshold voltage (V)
+    
+    parameter real thrlo2 = offset2 - 0.5*hyst2;	// Lower threshold voltage (V)
+    parameter real thrhi2 = offset2 + 0.5*hyst2;	// Upper threshold voltage (V)
+
+    initial begin
+        out = 0;
+        temp_out = 0;
+    end
+
+    always @(nrst or temp_out1 or temp_out2 or s)
+        #(D) out = (temp_out1 & ~s || temp_out2 & s) & nrst;
+
+
+    always @(above(V(p, n) - thrhi1)) 
+        temp_out1 = 1;
+    
+    always @(above(thrlo1 - V(p, n)))
+        temp_out1 = 0;
+
+
+    always @(above(V(p, n) - thrhi2)) 
+        temp_out2 = 1;
+    
+
+    always @(above(thrlo2 - V(p, n)))
+        temp_out2 = 0;
+
+endmodule
+

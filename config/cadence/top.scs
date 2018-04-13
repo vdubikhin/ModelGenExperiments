@@ -1,0 +1,2 @@
+transient tran stop=100000000us method=trap errpreset=conservative
+

@@ -1,0 +1,53 @@
+//simple mosfet model
+
+module mosfet(s, d, g, g_int);
+    parameter real roff = 1M from [0:inf); //off resistance
+    parameter real K = 1000 from (0:inf);  //determines resistance drop rate
+    parameter real Cgs = 10n from [0:inf);  //gate-source capacitance
+    parameter real Cgd = 10n from [0:inf);  //gate-drain capactiance
+    parameter real Vth = 1 from [0:inf); //threshold voltage
+    parameter real G_RES = 1 from [0:inf); // Gate resistance
+    parameter real S_RES = 0.05 from [0:inf); // Source resistance
+    parameter real D_RES = 0.05 from [0:inf); // Drain resistance
+    
+    parameter integer type = 0 from [0:1]; //0 for nmos, 1 for pmos
+
+    real ron; //on resistance
+    
+    inout s, d, g, g_int;
+    electrical s, d, g;
+
+    electrical s_int, d_int, g_int;
+
+    res #(.r(G_RES)) res_gate   (g, g_int);
+    res #(.r(S_RES)) res_source (s, s_int);
+    res #(.r(D_RES)) res_drain  (d, d_int);
+
+    cap #(.c(Cgs)) capgs(g_int, s_int);
+    cap #(.c(Cgd)) capgd(g_int, d_int);
+
+    analog begin
+    
+        if (type) begin
+            
+            if (V(g_int, s_int) < -Vth) begin
+                ron = roff*exp(-abs(V(g_int, s_int)+Vth)*K);
+                I(d_int, s_int) <+ V(d_int, s_int)/ron;
+            end else
+                I(d_int, s_int) <+ V(d_int, s_int)/roff;
+                
+            //$display("P-fet current: %f voltage: %f, calc_current: %f, GS V: %f, mosfet V: %f, ron: %f", I(s_int, d_int),
+                //V(s, s_int), V(s, s_int)/S_RES, V(g_int, s_int), V(s_int, d_int), ron);
+        end else begin
+            if (V(g_int, s_int) > Vth) begin
+                ron = roff*exp(-abs(V(g_int, s_int)-Vth)*K);
+                I(d_int, s_int) <+ V(d_int, s_int)/ron;
+            end else
+                I(d_int, s_int) <+ V(d_int, s_int)/roff;
+            //$display("N-fet current: %f voltage: %f, calc_current: %f, GS V: %f, mosfet V: %f, ron: %f", I(d_int, s_int),
+                //V(d, d_int), V(d, d_int)/D_RES, V(g_int, s_int), V(d_int, s_int),ron);
+        end
+
+    end
+
+endmodule

@@ -1,0 +1,22 @@
+// Junction diode
+//
+// Version 1a, 1 June 04
+//
+// Ken Kundert
+//
+// Downloaded from The Designer's Guide Community (www.designers-guide.org).
+// Post any questions on www.designers-guide.org/Forum.
+// Taken from "The Designer's Guide to Verilog-AMS" by Kundert & Zinke.
+// Chapter 3, Listing 12.
+
+`include "disciplines.vams"
+
+module diode (a, c);
+    parameter real is=10f from (0:inf);	// saturation current (A)
+    parameter real r=0 from [0:inf);	// series resistance (Ohms)
+    inout a, c;
+    electrical a, c;
+
+    analog
+        I(a,c) <+ is*(limexp((V(a,c) - r*I(a,c))/$vt) - 1);
+endmodule

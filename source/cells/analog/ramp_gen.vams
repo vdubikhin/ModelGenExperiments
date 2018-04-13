@@ -1,0 +1,11 @@
+module ramp_generator(out);
+    output out;
+    electrical out;
+    integer reset;
+    analog begin
+        reset = 0;
+        @(timer(1, 100))
+            reset = 1;
+        V(out) <+ idt(1.0, 0, reset);
+    end
+endmodule

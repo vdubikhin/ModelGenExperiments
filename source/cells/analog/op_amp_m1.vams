@@ -1,0 +1,34 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+// OP-AMP model v1
+module op_amp(Vin_p, Vin_n, S_p, S_n, Vout);
+    parameter real Rin = 0.1; //0 from [0:inf);
+    parameter real Ro = 0.1; //0 from [0:inf);
+    parameter real Co = 0 from [0:inf);
+    parameter real G = 10000;
+    
+    
+    inout Vin_p, Vin_n;
+    inout S_n, S_p;
+    inout Vout;
+    
+    electrical Vin_p, Vin_n, S_p, S_n, Vout;
+    electrical Vout_int;
+    
+    res #(.r(Rin)) res_in(.p(Vin_p), .n(Vin_n));
+    res #(.r(Ro)) res_o(.p(Vout_int), .n(Vout));
+    
+    analog begin
+        if (G*V(Vin_p, Vin_n) >= V(S_p))
+            V(Vout_int) <+ V(S_p);
+        else
+            if (G*V(Vin_p, Vin_n) <= V(S_n))
+                V(Vout_int) <+ V(S_n);
+            else
+                V(Vout_int) <+ G*V(Vin_p, Vin_n);
+    end
+    
+endmodule

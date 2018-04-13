@@ -1,0 +1,25 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module ideal_switch(p, n, s);
+    parameter real ron  = 0.00001;
+    parameter real goff = 0.00001;
+    parameter invert = 0;
+    
+    inout p, n;
+    input s;
+    
+    logic s;
+    electrical p, n;
+    
+    analog begin 
+        if ( (!s && invert) || (s && !invert) ) begin
+            I(p, n) <+ V(p, n)/ron;
+        end else begin
+            I(p, n) <+ 0;//goff*V(p, n);
+        end
+    end
+    
+endmodule

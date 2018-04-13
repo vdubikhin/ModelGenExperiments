@@ -1,0 +1,41 @@
+/*
+Switch network power supply and overcurrent sensor.
+
+Authors: Vladimir Dubikhin.
+*/
+
+`include "disciplines.vams"
+`include "constants.vams"
+`include "buck_converter_async_params.vh"
+
+/*
+Inputs:
+gp - P-type mosfet signal for digital simulation.
+Outputs:
+vsource - power supply for switches.
+oc - overcurrent signal.
+*/
+module vdd_oc (vsource, oc, gn_ack);
+    parameter VOLTAGE_SUPPLY = `VOLTAGE_SUPPLY;
+    parameter CMP_HYST       = `CMP_HYST;
+    parameter CMP_DELAY      = `CMP_DELAY;
+    parameter CMP_OFFSET     = `CMP_OFFSET;
+    parameter FILTER_DELAY   = `FILTER_DELAY;
+    parameter FILTER_SAMPLES = `FILTER_SAMPLES;
+    
+    inout vsource;
+    input gn_ack;
+    output oc;
+    
+    electrical vsource;
+    logic gn_ack, oc;
+    
+    v_source #(.voltage_out(VOLTAGE_SUPPLY)) vdd(.v_out(v_out), .g(vdd_gnd));
+    current_sense #(.hyst(CMP_HYST), .D(CMP_DELAY), .offset(CMP_OFFSET)) oc_cmp(.out(oc_sample), .n(vsource),
+        .p(v_out));
+    integrator #(.DELAY(FILTER_DELAY), .SAMPLES(FILTER_SAMPLES)) filter(.in(oc_sample), .sample(oc_sample),
+                                                                        .out(oc));
+    //c_latch latch(.in_pos(1'b1), .in_neg(1'b0), .clk1(oc_sample_filter), .clk2(~gn_ack), .out(oc));
+    gnd oc_gnd(vdd_gnd);
+
+endmodule

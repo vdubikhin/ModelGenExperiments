@@ -1,0 +1,43 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+// ***** Verilog-AMS TestBench *****
+
+module top();
+    parameter V_P = 1.5;
+    parameter V_N = -1.5;
+    parameter R1 = 10;
+    parameter R2 = 10;
+    parameter C = 100p;
+    
+    reg nrst = 1;
+    
+    initial begin
+    	$display("\nSTART OF SIMULATION\n");
+        #(1000000)
+        $display("\nEND OF SIMULATION\n");
+        $finish(0);
+    end
+    
+    square_gen  #(.P(10000), .V_P(1), .V_N(-1))sq_gen (test_voltage);  
+    //sine_wave #(.freq(10000), .ampl(1)) sine_gen(test_voltage);
+    //v_source #(.voltage_out(0)) test(test_voltage, gnd_w);
+
+    v_source #(.voltage_out(V_P)) int_volt_p(int_volt_p_out, gnd_w);
+    v_source #(.voltage_out(V_N)) int_volt_n(int_volt_n_out, gnd_w);
+    cap #(.c(C)) c1(.p(op_int_in), .n(op_int_out));
+    res #(.r(R1)) r1(test_voltage, op_int_in);
+    res #(.r(R2)) r2(op_int_in, d2a_out);
+    //op_amp #(.Rin(1000000), .Ro(0.001), .Co(0), .G(100)) op_int(.Vin_p(gnd_w), .Vin_n(op_int_in), .S_p(int_volt_p_out), 
+                                                               //.S_n(int_volt_n_out), .Vout(op_int_out));
+    ideal_opamp op_int(.pout(op_int_out), .nout(gnd_w), .pin(gnd_w), .nin(op_int_in));
+    
+    comparator #(.D(0), .offset(0), .hyst(0.05)) adc(.out(adc_out), .p(op_int_out), .n(gnd_w), .nrst(nrst));
+    flip_flop ff(.in(adc_out), .out(ff_out), .clk(clk));
+    gen #(.D(100)) gen_clk(.out(clk));
+    d2a #(.v_on(V_P), .v_off(V_N)) d2a_converter(.out(d2a_out), .in(ff_out), .gnd(gnd_w));
+    
+    gnd gnd_m(gnd_w); 
+endmodule

@@ -1,0 +1,25 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+// ***** Verilog-AMS TestBench *****
+
+module top();
+
+    initial begin
+    	$display("\nSTART OF SIMULATION\n");
+        #(100000)
+        $display("\nEND OF SIMULATION\n");
+        $finish(0);
+    end
+
+    v_source #(.voltage_out(0.3)) volt(v_out, gnd_w);
+    res #(.r(200)) r1(v_out, l_in);
+    ind #(.l(1u)) ind1(l_in, l_out);
+    tunnel_diode_v1 tunnel_diode(.a(l_out), .c(gnd_w));
+    cap #(.c(1p)) cap1 (l_out, gnd_w);
+    
+    gnd gnd_m(gnd_w);
+                                                                    
+endmodule

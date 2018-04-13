@@ -1,0 +1,50 @@
+/*
+Transistor switch with p-type mosfet.
+
+Authors: Vladimir Dubikhin.
+*/
+
+`include "disciplines.vams"
+`include "constants.vams"
+`include "buck_converter_async_params.vh"
+
+/*
+Analog ports:
+s - source
+d - drain
+Digital inputs:
+g - gate control signal
+Digital Ouputs:
+g_ack - P-type mosfet acknowledgment signal.
+*/
+module p_switch(g, s, d, g_ack, nrst);
+    parameter VOLTAGE_SUPPLY = `VOLTAGE_SUPPLY;
+    parameter VOLTAGE_ACK    = `P_VOLTAGE_ACK;
+    parameter GATE_RES       = `P_GATE_RES;
+    parameter G_S_CAP        = `P_G_S_CAP;
+    parameter G_D_CAP        = `P_G_D_CAP;
+    parameter GAIN_COEFF     = `P_GAIN_COEFF;
+    parameter CMP_HYST       = `P_CMP_HYST;
+    parameter CMP_DELAY      = `P_CMP_DELAY;
+    parameter FW_D_RES       = `P_FW_D_RES;
+    
+    inout d, s;
+    output g_ack;
+    input g, nrst;
+    
+    electrical d, s;
+    logic g, g_ack;
+    electrical p_ack_volt, sw_gnd;
+    
+    d2a #(.v_on(0), .v_off(VOLTAGE_SUPPLY)) d2a_pmos(.in(g), .out(mos_p_in), .gnd(sw_gnd));
+    diode #(.r(FW_D_RES)) diode_fw_p(.a(d), .c(s));
+    mosfet #(.Cgs(G_S_CAP), .Cgd(G_D_CAP), .K(GAIN_COEFF), .type(1)) p_mos (.g(mos_p_in), .g_int(p_g_int), .s(s), .d(d));
+    comparator #(.hyst(CMP_HYST), .D(CMP_DELAY)) pmos_ack(.out(g_ack), .n(p_g_int), .p(p_ack_volt), .nrst(nrst));   
+    
+    analog begin
+        V(p_ack_volt, sw_gnd) <+ VOLTAGE_ACK;
+    end
+    
+    gnd p_sw_gnd(sw_gnd);
+    
+endmodule

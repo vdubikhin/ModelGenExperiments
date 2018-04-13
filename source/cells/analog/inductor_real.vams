@@ -1,0 +1,25 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+// Inductor real
+
+module ind_real(t1,t2);
+
+	electrical t1, t2;
+	
+	parameter real esr=0.001 from (0:inf);
+	parameter real rcp=50.0 from (0:inf);
+	parameter real cp=0.1p from (0:inf);
+	parameter real l=1u from (0:inf);
+	parameter real k=0.0012 from (0:1);
+	parameter real h=580 from (1:inf);
+	
+	electrical n1, n2;
+	
+	resistor #(.r(rcp)) Rp (n2, t2);
+	skin_effect #(.r0(esr), .f0(2*esr*esr*h*h), .f1(1/(2*`M_PI*sqrt(l*cp)))) Hr (t1, n1);
+	cap #(.c(cp)) Cp (t1, n2);
+	ind #(.l(l)) L (n1, t2);
+
+endmodule
+

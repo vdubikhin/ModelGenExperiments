@@ -1,0 +1,53 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+// ***** Verilog-AMS TestBench *****
+
+module top();
+   
+    reg nrst = 1;
+    
+    initial begin
+    	$display("\nSTART OF SIMULATION\n");
+        #(10000)
+        $display("\nEND OF SIMULATION\n");
+        
+        $display("Power ind: %0.3f", power_ind);
+        $display("Power gen: %0.3f", power_gen);
+        $display("Power res: %0.3f", power_res);
+        $display("Power cap: %0.3f", power_cap);
+        
+        $finish(0);
+    end
+    
+    real power_ind = 0, power_gen = 0, power_res = 0, power_cap = 0;
+    
+    electrical gnd_w, out_voltage, test_voltage, test_voltage_o, out_voltage_c, out_voltage_r;
+    
+    always begin
+    #1
+        power_gen = power_gen + V(test_voltage, gnd_w) * I(test_voltage, test_voltage_o);
+        power_ind = power_ind + V(test_voltage, out_voltage) * I(test_voltage, test_voltage_o);
+        power_res = power_res + V(out_voltage, gnd_w) * I(out_voltage, out_voltage_r);
+        power_cap = power_cap + V(out_voltage, gnd_w) * I(out_voltage, out_voltage_c);
+        
+    end
+    
+    square_gen  #(.P(25), .V_P(0), .V_N(5)) sq_gen (test_voltage);  
+    //sine_wave #(.freq(10000), .ampl(1)) sine_gen(test_voltage);
+    //v_source #(.voltage_out(0)) test(test_voltage, gnd_w);
+
+
+    //ind #(.l(1u)) l1(.p(test_voltage_o), .n(out_voltage));
+
+    ind_real l1(.t1(test_voltage_o), .t2(out_voltage));
+
+    cap #(.c(1u)) c1(.p(out_voltage_c), .n(gnd_w)); 
+
+    res #(.r(2)) r2(out_voltage_r, gnd_w);
+
+    
+    gnd gnd_m(gnd_w); 
+endmodule

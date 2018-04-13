@@ -1,0 +1,19 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+// Capacitor
+
+module cap(p,n);
+ inout p,n;
+ electrical p,n;
+ parameter real c = 0 from [0:inf);
+ parameter real initial_value = 0;
+  
+ analog begin
+    if (analysis("ic"))
+        V(p,n) <+ initial_value;
+    else
+        I(p,n) <+ ddt(c*V(p,n));
+ end
+endmodule
+

@@ -1,0 +1,20 @@
+`timescale 1ns/100ps
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module  sine_wave (wave);
+
+output wave;
+real offset;
+electrical wave;
+
+parameter real freq   = 1000 from (0:inf);
+parameter real ampl= 1;
+           
+analog begin
+  V(wave) <+ ampl * sin(`M_PI* freq * $abstime);
+  $bound_step(0.1/freq);
+end
+
+endmodule

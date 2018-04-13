@@ -1,0 +1,17 @@
+`include "disciplines.vams"
+`include "constants.vams"
+// Inductor
+
+module ind(p,n);
+ inout p,n;
+ electrical p,n;
+ parameter real l=0 from [0:inf);
+           
+ analog begin
+    if (analysis("ic"))
+        I(p,n) <+ 0;
+    else
+        V(p,n) <+ l* ddt(I(p,n));
+ end
+endmodule
+

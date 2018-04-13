@@ -1,0 +1,59 @@
+/*
+Current sensing module. Measures current flowing through positive pin.
+Provides interconnect between positive and negative pins.
+
+Authors: Vladimir Dubikhin.
+*/
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+/*
+Inputs:
+p, n - positive and negative pints
+Digital Outputs:
+out - sensing result
+*/
+
+module current_sense(p, n, out);
+    parameter D = 10;
+    parameter real hyst = 0.0 from [0:inf);	// Hysteresis (I)
+    parameter real offset = 0;
+    
+    inout p, n;
+    output out;
+    
+    electrical p, n;
+    logic out;
+    
+    reg out = 0;
+    real current;
+    electrical out_temp = 0;
+    parameter real thrlo = offset - 0.5*hyst;	// Lower threshold current (I)
+    parameter real thrhi = offset + 0.5*hyst;	// Upper threshold current (I)
+
+    //initial begin
+        //out = 0;
+    //end
+    
+    analog begin
+        V(p,n) <+ 0;
+        current = I(p,n);
+        @(cross(current - offset, 1))
+	    ;
+        
+        
+        if (current - offset >= 0)
+            V(out_temp) <+ 1;
+        else
+            V(out_temp) <+ 0;
+    end
+
+    always @(above(I(p, n) - thrhi, 1p, 0.001)) 
+        #(D) out = 1;
+
+    always @(above(thrlo - I(p, n), 1p, 0.001))
+        #(D) out = 0;
+    
+    
+endmodule

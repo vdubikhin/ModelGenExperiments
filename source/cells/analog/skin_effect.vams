@@ -1,0 +1,38 @@
+`include "discipline.h"
+`include "constants.h"
+
+module skin_effect(p, n);
+	electrical p, n;
+	
+	parameter real f0=1 from (0:inf);
+	parameter real f1=10 from (f0:inf);
+	parameter real r0=1 from (0:inf);
+	
+	`define lumps 10
+	
+	real mult, mult2, wp, wz;
+	real zeros[0:2*`lumps-1], poles[0:2*`lumps-1];
+	
+	integer i;
+	
+	analog begin
+		@(initial_step("static")) begin
+			mult = pow(f1/f0, 1.0/(4*`lumps));
+			mult2 = mult*mult;
+			wz = 2*`M_PI*mult*f0;
+			wp = mult2*wz;
+			for (i=0; i < `lumps; i=i+1) begin
+				zeros[2*i] = -wz;
+				zeros[2*i+1] = 0;
+				poles[2*i] = -wp;
+				poles[2*i+1] = 0;
+				wz = mult2 * wp;
+				wp = mult2 * wz;
+			end
+		end
+		
+		
+		V(p,n) <+ r0*laplace_zp( I(p,n), zeros, poles );
+	end
+	
+endmodule
